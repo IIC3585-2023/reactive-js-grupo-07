@@ -1,0 +1,9 @@
+.config-container{
+    background-image: url('assets/TopGun.jpg');
+    height: 25vh;
+    object-fit: fill;
+}
+
+#canvas {
+    max-height: 75vh;
+}
