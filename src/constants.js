@@ -1,7 +1,16 @@
-export const CELL_SIZE     = 30;
-export const DIMENSION = '2d'
-export const MAP = 
-`
+export const CELL_SIZE = 30;
+export const DIMENSION = '2d';
+export const SPEED = 100;
+export const BOMBS_PER_LEVEL = 1;
+export const INITIAL_DIRECTION = { x: 1, y: 0 };
+export const DIRECTIONS = {
+  37: { x: -1, y: 0 },
+  38: { x: 0, y: -1 },
+  39: { x: 1, y: 0 },
+  40: { x: 0, y: 1 },
+};
+
+export const MAP = `
 ----------               -----
 ---------- ------- ----- -----
 ---------- -------        ----
@@ -17,4 +26,4 @@ export const MAP =
 -      --    --    --      ---
 ------    --    --    --------
 ------------------------------
-`
+`;
