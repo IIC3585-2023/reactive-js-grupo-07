@@ -100,6 +100,7 @@ export class Canvas {
       row = getRandomNumber(0, this.rows.length - 1);
       col = getRandomNumber(0, this.rows[0].length - 1);
     } while (this.cellOcupied[row][col]);
+    this.cellOcupied[row][col] = true;
     return { row, col };
   }
 }
