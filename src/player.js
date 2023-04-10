@@ -1,5 +1,6 @@
-// Create player object, then subclasses for ally and enemy
-// Player object is the parent class for the ally and enemy subclasses
+const { Observable, interval } = rxjs;
+const { map, combineLatest } = rxjs.operators;
+import { DIRECTIONS } from './constants.js';
 
 // Player object
 export class Player {
@@ -13,14 +14,23 @@ export class Player {
     this.isAlly = false;
   }
   move() {
-    this.x += this.direction.x * this.speed;
-    this.y += this.direction.y * this.speed;
+    this.x += DIRECTIONS[this.direction].x * this.speed;
+    this.y += DIRECTIONS[this.direction].y * this.speed;
   }
   changeDirection(direction) {
     this.direction = direction;
   }
   getDestroyed() {
     this.isLive = false;
+  }
+  getPosition$() {
+    return interval(1000) // 60 fps
+      .pipe(
+        map(() => {
+          this.move();
+          return { x: this.x, y: this.y };
+        })
+      );
   }
 }
 
@@ -49,7 +59,7 @@ export class Ally extends Player {
 
 // Enemy subclass. It moves faster than the ally
 export class Enemy extends Player {
-  constructor(x, y, direction, speed, id) {
-    super(x, y, direction, speed, id);
+  constructor(x, y, direction, speed) {
+    super(x, y, direction, speed);
   }
 }

@@ -1,4 +1,5 @@
 import { getRandomNumber } from './utils.js';
+import { Ally, Enemy } from './player.js';
 
 export class Canvas {
   constructor(cellSize, map, canvasElement, dimension) {
@@ -45,6 +46,7 @@ export class Canvas {
   }
 
   createPlayers(player1Image, player2Image = false) {
+    let players = [];
     const player1Cell = this.getAvailableCell();
     this.ctx.drawImage(
       player1Image,
@@ -53,7 +55,8 @@ export class Canvas {
       0.7 * this.cellSize,
       this.cellSize
     );
-    if(player2Image){
+    players.push(new Ally(player1Cell.col, player1Cell.row, 39, 1, 1));
+    if (player2Image) {
       const player2Cell = this.getAvailableCell();
       this.ctx.drawImage(
         player2Image,
@@ -62,12 +65,15 @@ export class Canvas {
         0.7 * this.cellSize,
         this.cellSize
       );
+      players.push(new Ally(player2Cell.col, player2Cell.row, 39, 1, 2));
     }
     // Falta instanciar al jugador (crear clase)
+    return players;
   }
 
   createEnemies(enemieImage, level) {
-    let enemyNumber= level
+    let enemies = [];
+    let enemyNumber = level;
     do {
       const cell = this.getAvailableCell();
       this.ctx.drawImage(
@@ -77,9 +83,9 @@ export class Canvas {
         this.cellSize,
         this.cellSize
       );
-      enemyNumber -= 1
+      enemyNumber -= 1;
+      enemies.push(new Enemy(cell.col, cell.row, 39, 1));
     } while (enemyNumber > 0);
-    
     // Falta instanciar al enemie
   }
 
@@ -100,6 +106,29 @@ export class Canvas {
       row = getRandomNumber(0, this.rows.length - 1);
       col = getRandomNumber(0, this.rows[0].length - 1);
     } while (this.cellOcupied[row][col]);
+    this.cellOcupied[row][col] = true;
     return { row, col };
+  }
+
+  drawAlly(element) {
+    const { x, y, image } = element;
+    this.ctx.drawImage(
+      image,
+      x * this.cellSize + 0.1 * this.cellSize,
+      y * this.cellSize + 0.1 * this.cellSize,
+      0.7 * this.cellSize,
+      this.cellSize
+    );
+  }
+
+  drawEnemy(element) {
+    const { x, y, image } = element;
+    this.ctx.drawImage(
+      image,
+      x * this.cellSize,
+      y * this.cellSize,
+      this.cellSize,
+      this.cellSize
+    );
   }
 }
