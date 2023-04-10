@@ -45,28 +45,42 @@ export class Canvas {
   }
 
   createPlayers(player1Image, player2Image = false) {
-    const cell = this.getAvailableCell();
+    const player1Cell = this.getAvailableCell();
     this.ctx.drawImage(
       player1Image,
-      cell.col * this.cellSize + 0.1 * this.cellSize,
-      cell.row * this.cellSize + 0.1 * this.cellSize,
+      player1Cell.col * this.cellSize + 0.1 * this.cellSize,
+      player1Cell.row * this.cellSize + 0.1 * this.cellSize,
       0.7 * this.cellSize,
       this.cellSize
     );
-    // Falta caso para jugador 2 e instanciar al jugador (crear clase)
+    if(player2Image){
+      const player2Cell = this.getAvailableCell();
+      this.ctx.drawImage(
+        player2Image,
+        player2Cell.col * this.cellSize + 0.1 * this.cellSize,
+        player2Cell.row * this.cellSize + 0.1 * this.cellSize,
+        0.7 * this.cellSize,
+        this.cellSize
+      );
+    }
+    // Falta instanciar al jugador (crear clase)
   }
 
   createEnemies(enemieImage, level) {
-    const cell = this.getAvailableCell();
-    console.log(cell);
-    this.ctx.drawImage(
-      enemieImage,
-      cell.col * this.cellSize,
-      cell.row * this.cellSize,
-      this.cellSize,
-      this.cellSize
-    );
-    // Falta instanciar al enemie y ver cuantos crear segun el nivel(crear clase)
+    let enemyNumber= level
+    do {
+      const cell = this.getAvailableCell();
+      this.ctx.drawImage(
+        enemieImage,
+        cell.col * this.cellSize,
+        cell.row * this.cellSize,
+        this.cellSize,
+        this.cellSize
+      );
+      enemyNumber -= 1
+    } while (enemyNumber > 0);
+    
+    // Falta instanciar al enemie
   }
 
   createMissile(missileImage) {

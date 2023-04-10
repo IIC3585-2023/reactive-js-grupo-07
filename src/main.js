@@ -50,11 +50,14 @@ const startGame = (canvas) => {
   const player2Image = document.getElementById('player2Image');
   const enemieImage = document.getElementById('enemieImage');
   const bombImage = document.getElementById('bombImage');
+  let enemyNumber = level.value * 2
 
   start_warning.style.display = 'none';
   canvas.createPlayers(player1Image, mode.value == 2 ? player2Image : false);
-  canvas.createEnemies(enemieImage, level.value);
+  canvas.createEnemies(enemieImage, enemyNumber);
+  document.getElementById('enemyNumber').textContent  = enemyNumber
   canvas.createMissile(bombImage);
+  start_btn.disabled ? start_btn.disabled = false : start_btn.disabled =true
 };
 
 main();
