@@ -42,6 +42,8 @@ export const createEnemies = (canvas, enemieImage, enemyNumber) => {
 export const createMissile = (canvas, missileImage) => {
   const cell = canvas.getAvailableCell();
   canvas.drawElement({ x: cell.col, y: cell.row, image: missileImage });
+  canvas.resetBitmap();
+  return { x: cell.col, y: cell.row };
 };
 
 export const getRandomNumber = (min, max) => {

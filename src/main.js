@@ -12,7 +12,8 @@ import {
 import { createPlayers, createEnemies, createMissile } from './utils.js';
 
 const { fromEvent, Observable, interval } = rxjs;
-const { map, filter, startWith, distinctUntilChanged } = rxjs.operators;
+const { map, filter, startWith, distinctUntilChanged, combineLatest, scan } =
+  rxjs.operators;
 
 const start_btn = document.getElementById('start_btn');
 
@@ -48,7 +49,8 @@ const startGame = (canvas) => {
 
   let players = createPlayers(canvas, player1Image, player2Image, mode.value);
   let enemies = createEnemies(canvas, enemieImage, enemyNumber);
-  createMissile(canvas, bombImage);
+  let missile = createMissile(canvas, bombImage);
+
   canvas.resetBitmap();
 
   document.getElementById('enemyNumber').textContent = enemyNumber;
@@ -108,6 +110,10 @@ const startGame = (canvas) => {
     return player.getPosition$();
   });
 
+  let playersObservable = players.map((player) => {
+    return player.getPosition$();
+  });
+
   positionObservable.map((position, idx) => {
     position.subscribe((e) => {
       canvas.changeElementPosition({
@@ -118,6 +124,20 @@ const startGame = (canvas) => {
     });
   });
 
+  let combined$;
+  if (mode.value == 'Single') {
+    combined$ = playersObservable[0];
+  } else {
+    combined$ = playersObservable[0].pipe(
+      combineLatest(playersObservable[1], (p1, p2) => {
+        return [p1, p2];
+      })
+    );
+  }
+
+  combined$.pipe(scan((takeBomb, createMissile(canvas, bombImage))));
+
+  combined$.subscribe((e) => console.log(e));
   //position$.subscribe((e) => console.log(e));
 
   // position$.subscribe((e) => console.log(e));
