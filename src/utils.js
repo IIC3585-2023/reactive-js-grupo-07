@@ -48,6 +48,7 @@ export const createMissile = (canvas, missileImage) => {
   canvas.drawElement({ x: cell.col, y: cell.row, image: missileImage });
   canvas.resetBitmap();
   const missile = new Missile(cell.col, cell.row, canvas, missileImage);
+  canvas.missile = { x: cell.col, y: cell.row };
   return missile;
 };
 

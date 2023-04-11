@@ -10,6 +10,7 @@ export class Canvas {
     this.height = this.cellSize * this.rows.length;
     this.cellOcupied = this.createBitmap(map);
     this.ctx = canvas.getContext(dimension);
+    this.missile = {x: null, y: null};
   }
 
   createCanvas(canvasElement) {
@@ -111,10 +112,15 @@ export class Canvas {
     );
   }
   changeElementPosition(element) {
-    const { initialPos, finalPos, image, isLive } = element;
+    const { initialPos, finalPos, entity, bombImage } = element;
     this.deleteElement({ x: initialPos.x, y: initialPos.y });
-    if (isLive) {
-      this.drawElement({ x: finalPos.x, y: finalPos.y, image: image });
+    if (initialPos.x === this.missile.x && initialPos.y === this.missile.y) {
+      if (!entity.isAlly) {
+        this.drawElement({ x: initialPos.x, y: initialPos.y, image: bombImage });
+      }
+    }
+    if (entity.isLive) {
+      this.drawElement({ x: finalPos.x, y: finalPos.y, image: entity.image });
     }
   }
 

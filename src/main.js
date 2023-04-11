@@ -140,8 +140,8 @@ const startGame = (canvas) => {
       canvas.changeElementPosition({
         initialPos: observable.initialPosition,
         finalPos: observable.finalPosition,
-        image: entities[idx].image,
-        isLive: entities[idx].isLive,
+        entity: entities[idx],
+        bombImage: bombImage,
       });
     });
 
@@ -163,7 +163,7 @@ const startGame = (canvas) => {
       }
     });
 
-    // Logica para disparar misil
+    // Logica para choque entre personajes ally vs enemy
     observables.map((value, index) => {
       observables.map((value2, index2) => {
         if (index != index2) {
@@ -173,6 +173,18 @@ const startGame = (canvas) => {
             const entity = entities[index];
             if (entity.isAlly) {
               entity.attackOtherPlayer(entities[index2]);
+              enemies = enemies.filter((enemy) => enemy.isLive);
+              document.getElementById('enemyNumber').textContent = enemies.length;
+              if (enemies.length == 0) {
+                alert('Felicitaciones! Ha'+ (mode.value == 2 ? 'n': 's')+' conseguido matar a todos los enemigos');
+                entities.map((entity) => entity.isLive = false);
+                location.reload();
+              }
+              else if (players.filter((player) => player.isLive).length == 0) {
+                alert('Lamentablemente, ha'+ (mode.value == 2 ? 'n': 's')+' sido derrotado'+ (mode.value == 2 ? 's': '')+' :(');
+                entities.map((entity) => entity.isLive = false);
+                location.reload();
+              }
             }
           }
         }
