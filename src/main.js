@@ -15,9 +15,8 @@ import {
   createMissile
 } from './utils.js';
 
-const { fromEvent, Observable, interval, of, from } = rxjs;
-const { map, filter, startWith, distinctUntilChanged, combineLatest, scan, sequenceEqual, switchMap} =
-  rxjs.operators;
+const { fromEvent, Observable, interval, combineLatest} = rxjs;
+const { map, filter, startWith, distinctUntilChanged } = rxjs.operators;
 
 const start_btn = document.getElementById('start_btn');
 
@@ -45,13 +44,27 @@ const startGame = (canvas) => {
 
   const player1Image = document.getElementById('player1Image');
   const player2Image = document.getElementById('player2Image');
+  const player1BombsElement = document.getElementById('player1Bombs');
+  const player2BombsElement = document.getElementById('player2Bombs');
+  const player1ScoreElement = document.getElementById('player1Score');
+  const player2ScoreElement = document.getElementById('player2Score');
+  const player1Elements = {
+    image: player1Image, 
+    bombs: player1BombsElement, 
+    score: player1ScoreElement
+  }
+  const player2Elements = {
+    image: player2Image, 
+    bombs: player2BombsElement, 
+    score: player2ScoreElement
+  }
   const enemieImage = document.getElementById('enemieImage');
   const bombImage = document.getElementById('bombImage');
   let enemyNumber = level.value * 2;
 
   start_warning.style.display = 'none';
 
-  let players = createPlayers(canvas, player1Image, player2Image, mode.value);
+  let players = createPlayers(canvas, player1Elements, player2Elements, mode.value);
   let enemies = createEnemies(canvas, enemieImage, enemyNumber);
   let missile = createMissile(canvas, bombImage);
 
@@ -114,42 +127,67 @@ const startGame = (canvas) => {
     return player.getPosition$();
   });
 
-  let playersObservable = players.map((player) => {
-    return player.getPosition$();
-  });
-
-  positionObservable.map((position, idx) => {
-    position.subscribe((e) => {
-      canvas.changeElementPosition({
-        initialPos: e.initialPosition,
-        finalPos: e.finalPosition,
-        image: entities[idx].image,
-      });
-    });
-  });
-
-  let combined$;
-  if (mode.value == 1) {
-    combined$ = playersObservable[0];
-  } else {
-    combined$ = playersObservable[0].pipe(
-      combineLatest(playersObservable[1], (p1, p2) => {
-        return [p1, p2];
-      })
-    );
-  }
-
+  // let playersObservable = players.map((player) => {
+  //   return player.getPosition$();
+  // });
+  // let combined$;
+  // if (mode.value == 1) {
+  //   combined$ = playersObservable[0];
+  // } else {
+  //   combined$ = playersObservable[0].pipe(
+  //     combineLatest(playersObservable[1], (p1, p2) => {
+  //       return [p1, p2];
+  //     })
+  //   );
+  // }
   // combined$.pipe(scan((takeBomb, createMissile(canvas, bombImage))));
-
-  const missileObservable = missile.getPosition$();
-  of(combined$)
-    .pipe(switchMap(arr => from(arr).pipe(sequenceEqual(missileObservable))))
-    .subscribe(console.log);
-
   // combined$.subscribe((e) => console.log(e));
 
 
-  
+  // const missileObservable$ = missile.getPosition$()
+  // missileObservable$.subscribe((position) => {
+  //   entities.map((entity) => {
+  //     if (entity.x == position.x && entity.y == position.y) {
+  //       if(!entity.isAlly){
+  //         canvas.drawElement({ x: position.x, y: position.y, image: bombImage})
+  //       }
+  //       else{
+  //         entity.takeBomb()
+  //         missile = createMissile(canvas, bombImage)
+  //       }
+  //     }
+  //   });
+  // })
+
+  const latestPositions$ = combineLatest(...positionObservable);
+
+  latestPositions$.subscribe((observables) => {
+
+    // movimientos de personajes
+    observables.map((observable, idx) => {
+      canvas.changeElementPosition({
+        initialPos: observable.initialPosition,
+        finalPos: observable.finalPosition,
+        image: entities[idx].image,
+      });
+    });
+
+    // Logica para agarrar misil
+    const missilePos = missile.getPosition()
+    observables.map((value, index) => {
+      if(value.finalPosition.x == missilePos.x && value.finalPosition.y == missilePos.y){
+        const entity = entities[index]
+        if(!entity.isAlly){
+          canvas.drawElement({ x: value.finalPosition.x , y: value.finalPosition.y, image: bombImage})
+        }
+        else{
+          entity.takeBomb()
+          missile = createMissile(canvas, bombImage)
+        }
+      }
+    })
+  });
+
   //position$.subscribe((e) => console.log(e));
 
   // position$.subscribe((e) => console.log(e));

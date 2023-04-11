@@ -94,22 +94,25 @@ export class Canvas {
     );
   }
 
-  changeElementPosition(element) {
-    const { initialPos, finalPos, image } = element;
+  deleteElement(pos){
+    const { x, y} = pos;
     this.ctx.clearRect(
-      initialPos.x * this.cellSize,
-      initialPos.y * this.cellSize,
+      x * this.cellSize,
+      y * this.cellSize,
       this.cellSize,
       this.cellSize
     );
     this.ctx.fillStyle = 'lightblue';
     this.ctx.fillRect(
-      initialPos.x * this.cellSize,
-      initialPos.y * this.cellSize,
+      x * this.cellSize,
+      y * this.cellSize,
       this.cellSize,
       this.cellSize
     );
-
+  }
+  changeElementPosition(element) {
+    const { initialPos, finalPos, image } = element;
+    this.deleteElement({x: initialPos.x, y: initialPos.y})
     this.drawElement({ x: finalPos.x, y: finalPos.y, image: image });
   }
 

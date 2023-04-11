@@ -41,15 +41,18 @@ export class Player {
 
 // Ally subclass
 export class Ally extends Player {
-  constructor(x, y, direction, id, canvas, image) {
-    super(x, y, direction, canvas, image);
+  constructor(x, y, direction, id, canvas, image, bombElement, scoreElement) {
+    super(x, y, direction, canvas, image, bombElement, scoreElement);
     this.id = id;
     this.isAlly = true;
     this.kills = 0;
     this.n_bombs = 0;
+    this.bombElement = bombElement;
+    this.scoreElement = scoreElement;
   }
   takeBomb() {
     this.n_bombs += 1;
+    this.bombElement.textContent = this.n_bombs+'💣'
   }
   changeDirection(direction) {
     this.direction = direction;
@@ -70,7 +73,6 @@ export class Ally extends Player {
 export class Enemy extends Player {
   constructor(x, y, direction, canvas, image) {
     super(x, y, direction, canvas, image);
-    console.log(this.direction);
     this.isAlly = false;
   }
   changeDirection(direction) {
@@ -85,17 +87,12 @@ export class Enemy extends Player {
 export class Missile {
   constructor(x, y, canvas, image) {
     this.x = x
-    this.x = y
+    this.y = y
     this.canvas = canvas
     this.image = image
   }
 
-  getPosition$() {
-    return interval(1000 / FPS) // 30 fps
-      .pipe(
-        map(() => {
-          return { x: this.x, y: this.y };
-        })
-      );
+  getPosition() {
+    return { x: this.x, y: this.y };
   }
 }

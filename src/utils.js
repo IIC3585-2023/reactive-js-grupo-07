@@ -2,14 +2,16 @@ import { Ally, Enemy, Missile } from './player.js';
 
 export const createPlayers = (
   canvas,
-  player1Image,
-  player2Image,
+  player1Elements,
+  player2Elements,
   n_players
 ) => {
   let players = [];
   do {
     const cell = canvas.getAvailableCell();
-    const image = players.length === 0 ? player1Image : player2Image;
+    const image = players.length === 0 ? player1Elements.image : player2Elements.image;
+    const bombElement = players.length === 0 ? player1Elements.bombs : player2Elements.bombs;
+    const scoreElement = players.length === 0 ? player1Elements.score : player2Elements.score;
     canvas.drawElement({
       x: cell.col,
       y: cell.row,
@@ -22,7 +24,9 @@ export const createPlayers = (
         39,
         n_players - players.length,
         canvas,
-        image
+        image,
+        bombElement,
+        scoreElement
       )
     );
   } while (players.length < n_players);
