@@ -26,6 +26,7 @@ export class Player {
   getDestroyed() {
     this.isLive = false;
   }
+
   getPosition$() {
     return interval(1000 / FPS) // 30 fps
       .pipe(
@@ -52,19 +53,31 @@ export class Ally extends Player {
   }
   takeBomb() {
     this.n_bombs += 1;
-    this.bombElement.textContent = this.n_bombs+'💣'
+    this.updateScore();
   }
+  kill() {
+    this.kills += 1;
+    this.n_bombs -= 1;
+    this.updateScore();
+  }
+  updateScore() {
+    this.bombElement.textContent = this.n_bombs + '💣';
+    this.scoreElement.textContent = this.kills + '☠️';
+  }
+
   changeDirection(direction) {
     this.direction = direction;
   }
   attackOtherPlayer(opponentPilot) {
     if (opponentPilot.isAlly) return;
+    if (!opponentPilot.isLive) return;
     if (this.n_bombs > 0) {
       opponentPilot.getDestroyed();
-      this.n_bombs -= 1;
-      this.kills += 1;
+      this.kill();
+      return true;
     } else {
       this.getDestroyed();
+      return false;
     }
   }
 }
@@ -79,19 +92,30 @@ export class Enemy extends Player {
     const pos = { x: this.x + this.direction.x, y: this.y + this.direction.y };
     if (this.canvas.wallCollision(pos)) {
       this.direction = direction;
+    } else if (
+      !this.canvas.wallCollision(pos) &&
+      Math.random() > 0.5 &&
+      !this.isOppositeDirection(direction)
+    ) {
+      this.direction = direction;
     }
+  }
+  isOppositeDirection(direction) {
+    return (
+      this.direction.x + direction.x === 0 &&
+      this.direction.y + direction.y === 0
+    );
   }
 }
 
 // Enemy subclass. It moves faster than the ally
 export class Missile {
   constructor(x, y, canvas, image) {
-    this.x = x
-    this.y = y
-    this.canvas = canvas
-    this.image = image
+    this.x = x;
+    this.y = y;
+    this.canvas = canvas;
+    this.image = image;
   }
-
   getPosition() {
     return { x: this.x, y: this.y };
   }

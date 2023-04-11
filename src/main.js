@@ -9,14 +9,11 @@ import {
   P1DIRECTIONS,
   P2DIRECTIONS,
 } from './constants.js';
-import {
-  createPlayers,
-  createEnemies,
-  createMissile
-} from './utils.js';
+import { createPlayers, createEnemies, createMissile } from './utils.js';
 
-const { fromEvent, Observable, interval, combineLatest} = rxjs;
-const { map, filter, startWith, distinctUntilChanged } = rxjs.operators;
+const { fromEvent, Observable, interval, combineLatest, zip } = rxjs;
+const { map, filter, startWith, distinctUntilChanged, partition } =
+  rxjs.operators;
 
 const start_btn = document.getElementById('start_btn');
 
@@ -49,22 +46,27 @@ const startGame = (canvas) => {
   const player1ScoreElement = document.getElementById('player1Score');
   const player2ScoreElement = document.getElementById('player2Score');
   const player1Elements = {
-    image: player1Image, 
-    bombs: player1BombsElement, 
-    score: player1ScoreElement
-  }
+    image: player1Image,
+    bombs: player1BombsElement,
+    score: player1ScoreElement,
+  };
   const player2Elements = {
-    image: player2Image, 
-    bombs: player2BombsElement, 
-    score: player2ScoreElement
-  }
+    image: player2Image,
+    bombs: player2BombsElement,
+    score: player2ScoreElement,
+  };
   const enemieImage = document.getElementById('enemieImage');
   const bombImage = document.getElementById('bombImage');
   let enemyNumber = level.value * 2;
 
   start_warning.style.display = 'none';
 
-  let players = createPlayers(canvas, player1Elements, player2Elements, mode.value);
+  let players = createPlayers(
+    canvas,
+    player1Elements,
+    player2Elements,
+    mode.value
+  );
   let enemies = createEnemies(canvas, enemieImage, enemyNumber);
   let missile = createMissile(canvas, bombImage);
 
@@ -80,7 +82,7 @@ const startGame = (canvas) => {
   const keyDown$ = fromEvent(document, 'keydown');
   const tick$ = interval(1000 / FPS);
 
-  let randomDirection$ = interval(10).pipe(
+  let randomDirection$ = interval(1000 / FPS).pipe(
     map(() => P1DIRECTIONS[Math.floor(Math.random() * 4) + 37]),
     filter((direction) => !!direction),
     startWith(INITIAL_DIRECTION),
@@ -127,97 +129,56 @@ const startGame = (canvas) => {
     return player.getPosition$();
   });
 
-  // let playersObservable = players.map((player) => {
-  //   return player.getPosition$();
-  // });
-  // let combined$;
-  // if (mode.value == 1) {
-  //   combined$ = playersObservable[0];
-  // } else {
-  //   combined$ = playersObservable[0].pipe(
-  //     combineLatest(playersObservable[1], (p1, p2) => {
-  //       return [p1, p2];
-  //     })
-  //   );
-  // }
-  // combined$.pipe(scan((takeBomb, createMissile(canvas, bombImage))));
-  // combined$.subscribe((e) => console.log(e));
-
-
-  // const missileObservable$ = missile.getPosition$()
-  // missileObservable$.subscribe((position) => {
-  //   entities.map((entity) => {
-  //     if (entity.x == position.x && entity.y == position.y) {
-  //       if(!entity.isAlly){
-  //         canvas.drawElement({ x: position.x, y: position.y, image: bombImage})
-  //       }
-  //       else{
-  //         entity.takeBomb()
-  //         missile = createMissile(canvas, bombImage)
-  //       }
-  //     }
-  //   });
-  // })
-
   const latestPositions$ = combineLatest(...positionObservable);
+  const enemyLastPositions$ = combineLatest(
+    positionObservable.slice(mode.value)
+  );
 
   latestPositions$.subscribe((observables) => {
-
     // movimientos de personajes
     observables.map((observable, idx) => {
       canvas.changeElementPosition({
         initialPos: observable.initialPosition,
         finalPos: observable.finalPosition,
         image: entities[idx].image,
+        isLive: entities[idx].isLive,
       });
     });
 
     // Logica para agarrar misil
-    const missilePos = missile.getPosition()
+    const missilePos = missile.getPosition();
     observables.map((value, index) => {
-      if(value.finalPosition.x == missilePos.x && value.finalPosition.y == missilePos.y){
-        const entity = entities[index]
-        if(!entity.isAlly){
-          canvas.drawElement({ x: value.finalPosition.x , y: value.finalPosition.y, image: bombImage})
-        }
-        else{
-          entity.takeBomb()
-          missile = createMissile(canvas, bombImage)
+      if (canvas.checkCollision(value.finalPosition, missilePos)) {
+        const entity = entities[index];
+        if (!entity.isAlly) {
+          canvas.drawElement({
+            x: missilePos.x,
+            y: missilePos.y,
+            image: bombImage,
+          });
+        } else {
+          entity.takeBomb();
+          missile = createMissile(canvas, bombImage);
         }
       }
-    })
+    });
+
+    // Logica para disparar misil
+    observables.map((value, index) => {
+      observables.map((value2, index2) => {
+        if (index != index2) {
+          if (
+            canvas.checkCollision(value.finalPosition, value2.finalPosition)
+          ) {
+            const entity = entities[index];
+            if (entity.isAlly) {
+              entity.attackOtherPlayer(entities[index2]);
+            }
+          }
+        }
+      });
+    });
   });
-
-  //position$.subscribe((e) => console.log(e));
-
-  // position$.subscribe((e) => console.log(e));
-
-  // // Create an observable for each enemy's position
-  // const enemies$ = enemiesArr.map((enemy) => {
-  //   return interval(16).pipe(() => {
-  //     enemy.move();
-  //     return { x: enemy.x, y: enemy.y };
-  //   });
-  // });
-
-  // // Combine the direction$ observable with each enemy's position observable
-  // const enemiesWithDirection$ = enemiesArr.map((enemy, i) => {
-  //   return randomDirection$.combineLatest(
-  //     enemies$[i],
-  //     (direction, position) => {
-  //       enemy.changeDirection(direction);
-  //       return position;
-  //     }
-  //   );
-  // });
-
-  // // Subscribe to each enemy's observable to update their position on the canvas
-  // enemiesWithDirection$.forEach((enemy$) => {
-  //   enemy$.subscribe((position) => {
-  //     // Update enemy's position on the canvas
-  //     canvas.drawElement({ x: position.x, y: position.y, image: enemieImage });
-  //   });
-  // });
 };
 
 main();

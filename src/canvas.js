@@ -94,8 +94,8 @@ export class Canvas {
     );
   }
 
-  deleteElement(pos){
-    const { x, y} = pos;
+  deleteElement(pos) {
+    const { x, y } = pos;
     this.ctx.clearRect(
       x * this.cellSize,
       y * this.cellSize,
@@ -111,9 +111,11 @@ export class Canvas {
     );
   }
   changeElementPosition(element) {
-    const { initialPos, finalPos, image } = element;
-    this.deleteElement({x: initialPos.x, y: initialPos.y})
-    this.drawElement({ x: finalPos.x, y: finalPos.y, image: image });
+    const { initialPos, finalPos, image, isLive } = element;
+    this.deleteElement({ x: initialPos.x, y: initialPos.y });
+    if (isLive) {
+      this.drawElement({ x: finalPos.x, y: finalPos.y, image: image });
+    }
   }
 
   checkCollision(a, b) {
