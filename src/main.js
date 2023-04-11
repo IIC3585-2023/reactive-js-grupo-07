@@ -5,6 +5,7 @@ import {
   MAP,
   SPEED,
   INITIAL_DIRECTION,
+  DIRECTIONS,
 } from './constants.js';
 import { nextDirection } from './utils.js';
 
@@ -21,25 +22,14 @@ const {
 } = rxjs.operators;
 
 const start_btn = document.getElementById('start_btn');
-let keyDown$ = fromEvent(document.body, 'keydown');
 
-let tick$ = interval(SPEED);
-
-let direction$ = keyDown$.pipe(
-  map((e) => DIRECTIONS[e.keyCode]),
-  filter((direction) => !!direction),
-  startWith(INITIAL_DIRECTION),
-  scan(nextDirection),
-  distinctUntilChanged()
-);
-
-let randomDirection$ = interval(1000).pipe(
-  map(() => DIRECTIONS[Math.floor(Math.random() * 4) + 37]),
-  filter((direction) => !!direction),
-  startWith(INITIAL_DIRECTION),
-  scan(nextDirection),
-  distinctUntilChanged()
-);
+// let randomDirection$ = interval(1000).pipe(
+//   map(() => DIRECTIONS[Math.floor(Math.random() * 4) + 37]),
+//   filter((direction) => !!direction),
+//   startWith(INITIAL_DIRECTION),
+//   scan(nextDirection),
+//   distinctUntilChanged()
+// );
 
 const main = () => {
   const canvasElement = document.getElementById('canvas');
@@ -81,9 +71,58 @@ const startGame = (canvas) => {
     ? (start_btn.disabled = false)
     : (start_btn.disabled = true);
 
-  let position$ = players[0].getPosition$();
+
+    ////// INICIO VERSION 2 /////////////////////
+
+  // Define the initial position
+  let position = { x: players[0].x, y: players[0].y };
+  let direction = '';
+
+  // Create observables for key presses and game ticks
+  const keyDown$ = fromEvent(document, 'keydown');
+  const tick$ = interval(100);
+
+  // Filter key presses to only include arrow keys
+  const arrowKeys$ = keyDown$.pipe(
+    filter(event => ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code))
+  );
+
+  // Map arrow key presses to direction strings
+  const direction$ = arrowKeys$.pipe(
+    map(event => {
+      switch (event.code) {
+        case 'ArrowUp':
+          return 'up';
+        case 'ArrowDown':
+          return 'down';
+        case 'ArrowLeft':
+          return 'left';
+        case 'ArrowRight':
+          return 'right';
+      }
+    })
+  );
+
+  // Scan over the direction stream to update the position of Pac-Man
+  const position$ = direction$.pipe(
+    scan((position, direction) => {
+      switch (direction) {
+        case 'up':
+          return { x: position.x, y: position.y - 1 };
+        case 'down':
+          return { x: position.x, y: position.y + 1 };
+        case 'left':
+          return { x: position.x - 1, y: position.y };
+        case 'right':
+          return { x: position.x + 1, y: position.y };
+      }
+    }, position)
+  );
+
+  ////// FIN VERSION 2 /////////////////////
+
   position$.subscribe((e) =>
-    canvas.drawAlly({ x: e.x, y: e.y, image: player1Image })
+    canvas.movePlayer({ x: e.x, y: e.y, player: players[0], image: player1Image})
   );
   //position$.subscribe((e) => console.log(e.x));
 
@@ -112,7 +151,7 @@ const startGame = (canvas) => {
   // enemiesWithDirection$.forEach((enemy$) => {
   //   enemy$.subscribe((position) => {
   //     // Update enemy's position on the canvas
-  //     canvas.drawEnemy({ x: position.x, y: position.y, image: enemieImage });
+  //     canvas.drawElement({ x: position.x, y: position.y, image: enemieImage });
   //   });
   // });
 };
