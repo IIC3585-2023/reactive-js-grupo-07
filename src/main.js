@@ -1,35 +1,20 @@
 import { Canvas } from './canvas.js';
+import { Ally, Enemy } from './player.js';
 import {
   CELL_SIZE,
   DIMENSION,
   MAP,
-  SPEED,
   INITIAL_DIRECTION,
-  DIRECTIONS,
+  FPS,
+  P1DIRECTIONS,
+  P2DIRECTIONS,
 } from './constants.js';
-import { nextDirection } from './utils.js';
+import { createPlayers, createEnemies, createMissile } from './utils.js';
 
 const { fromEvent, Observable, interval } = rxjs;
-const {
-  map,
-  filter,
-  startWith,
-  scan,
-  distinctUntilChanged,
-  pipe,
-  combineLatest,
-  withLatestFrom,
-} = rxjs.operators;
+const { map, filter, startWith, distinctUntilChanged } = rxjs.operators;
 
 const start_btn = document.getElementById('start_btn');
-
-// let randomDirection$ = interval(1000).pipe(
-//   map(() => DIRECTIONS[Math.floor(Math.random() * 4) + 37]),
-//   filter((direction) => !!direction),
-//   startWith(INITIAL_DIRECTION),
-//   scan(nextDirection),
-//   distinctUntilChanged()
-// );
 
 const main = () => {
   const canvasElement = document.getElementById('canvas');
@@ -60,58 +45,80 @@ const startGame = (canvas) => {
   let enemyNumber = level.value * 2;
 
   start_warning.style.display = 'none';
-  let players = canvas.createPlayers(
-    player1Image,
-    mode.value == 2 ? player2Image : false
-  );
-  let enemiesArr = canvas.createEnemies(enemieImage, enemyNumber);
+
+  let players = createPlayers(canvas, player1Image, player2Image, mode.value);
+  let enemies = createEnemies(canvas, enemieImage, enemyNumber);
+  createMissile(canvas, bombImage);
+  canvas.resetBitmap();
+
   document.getElementById('enemyNumber').textContent = enemyNumber;
-  canvas.createMissile(bombImage);
+
   start_btn.disabled
     ? (start_btn.disabled = false)
     : (start_btn.disabled = true);
 
-
   // Create observables for key presses and game ticks
   const keyDown$ = fromEvent(document, 'keydown');
-  const tick$ = interval(100);
+  const tick$ = interval(1000 / FPS);
 
-  // Filter key presses to only include arrow keys
-  const arrowKeys$ = keyDown$.pipe(
-    filter(event => ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code))
+  let randomDirection$ = interval(10).pipe(
+    map(() => P1DIRECTIONS[Math.floor(Math.random() * 4) + 37]),
+    filter((direction) => !!direction),
+    startWith(INITIAL_DIRECTION),
+    distinctUntilChanged()
   );
 
-  // Map arrow key presses to direction strings
-  let direction$ = arrowKeys$.pipe(
-    map(event => {
-      switch (event.code) {
-        case 'ArrowUp':
-          return 'up';
-        case 'ArrowDown':
-          return 'down';
-        case 'ArrowLeft':
-          return 'left';
-        case 'ArrowRight':
-          return 'right';
+  // Create direction observables for each player
+  let player1Direction$ = keyDown$.pipe(
+    map((e) => P1DIRECTIONS[e.keyCode]),
+    filter((direction) => !!direction),
+    startWith(INITIAL_DIRECTION),
+    distinctUntilChanged()
+  );
+
+  let player2Direction$ = keyDown$.pipe(
+    map((e) => P2DIRECTIONS[e.keyCode]),
+    filter((direction) => !!direction),
+    startWith(INITIAL_DIRECTION),
+    distinctUntilChanged()
+  );
+
+  const playersDirection = [player1Direction$, player2Direction$];
+
+  // Create an observable for each player's position
+  players.map((player, idx) => {
+    playersDirection[idx].subscribe((e) => {
+      if (player.direction != e) {
+        player.changeDirection(e);
       }
-    })
-  ); 
- 
-  direction$.subscribe((e) =>{
-    if(players[0].direction != e){
-      players[0].changeDirection(e)
-    }
-  })
+    });
+  });
 
-  let position$ = players[0].getPosition$();
-  position$.subscribe((e) =>{
-    canvas.changeElementPosition({ 
-      initialPos: {x: e.x, y: e.y}, 
-      finalPos: {x: players[0].x, y: players[0].y}, 
-      image: player1Image})
-  }
-  );
-  //position$.subscribe((e) => console.log(e.x));
+  enemies.map((enemy, idx) => {
+    randomDirection$.subscribe((e) => {
+      if (enemy.direction != e) {
+        enemy.changeDirection(e);
+      }
+    });
+  });
+
+  let entities = players.concat(enemies);
+
+  let positionObservable = entities.map((player) => {
+    return player.getPosition$();
+  });
+
+  positionObservable.map((position, idx) => {
+    position.subscribe((e) => {
+      canvas.changeElementPosition({
+        initialPos: e.initialPosition,
+        finalPos: e.finalPosition,
+        image: entities[idx].image,
+      });
+    });
+  });
+
+  //position$.subscribe((e) => console.log(e));
 
   // position$.subscribe((e) => console.log(e));
 

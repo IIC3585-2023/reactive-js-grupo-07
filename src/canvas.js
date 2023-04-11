@@ -1,15 +1,25 @@
 import { getRandomNumber } from './utils.js';
-import { Ally, Enemy } from './player.js';
 
 export class Canvas {
   constructor(cellSize, map, canvasElement, dimension) {
+    this.canvas = this.createCanvas(canvasElement);
+    this.rows = this.convertMap(map);
+    this.map = map;
     this.cellSize = cellSize;
-    this.canvas = canvasElement;
-    this.ctx = canvas.getContext(dimension);
-    this.rows = map.split('\n').filter((row) => row != '');
     this.width = this.cellSize * this.rows[0].length;
     this.height = this.cellSize * this.rows.length;
     this.cellOcupied = this.createBitmap(map);
+    this.ctx = canvas.getContext(dimension);
+  }
+
+  createCanvas(canvasElement) {
+    canvasElement.setAttribute('width', this.width);
+    canvasElement.setAttribute('height', this.height);
+    return canvasElement;
+  }
+
+  convertMap(map) {
+    return map.split('\n').filter((row) => row != '');
   }
 
   createBitmap(map) {
@@ -18,6 +28,18 @@ export class Canvas {
       .filter((row) => row != '')
       .map((row) => row.split('').map((el) => (el === '-' ? true : false)));
     return cellOcupied;
+  }
+
+  resetBitmap() {
+    this.cellOcupied = this.createBitmap(this.map);
+  }
+
+  renderGame(scene) {
+    this.renderMap(ctx);
+    this.renderPlayers(ctx, scene.players);
+    this.renderEnemies(ctx, scene.enemies);
+    this.renderMissiles(ctx, scene.missiles);
+    this.renderScore(ctx, scene.score);
   }
 
   createMap(cloudImage) {
@@ -33,42 +55,22 @@ export class Canvas {
       const columns = row.split('');
       columns.map((cell, colIndex) => {
         if (cell === '-') {
-          this.drawElement({ x: colIndex, y: rowIndex, image: cloudImage })
+          this.drawElement({ x: colIndex, y: rowIndex, image: cloudImage });
         }
       });
     });
   }
 
-  createPlayers(player1Image, player2Image = false) {
-    let players = [];
-    const player1Cell = this.getAvailableCell();
-    this.drawElement({ x: player1Cell.col, y: player1Cell.row, image: player1Image })
-    players.push(new Ally(player1Cell.col, player1Cell.row, '', 1, 1));
-    
-    if (player2Image) {
-      const player2Cell = this.getAvailableCell();
-      this.drawElement({ x: player2Cell.col, y: player2Cell.row, image: player2Image })
-      players.push(new Ally(player2Cell.col, player2Cell.row, '', 1, 2));
-    }
-    // Falta instanciar al jugador (crear clase)
-    return players;
-  }
-
-  createEnemies(enemieImage, level) {
-    let enemies = [];
-    let enemyNumber = level;
-    do {
-      const cell = this.getAvailableCell();
-      this.drawElement({ x: cell.col, y: cell.row, image: enemieImage })
-      enemyNumber -= 1;
-      enemies.push(new Enemy(cell.col, cell.row, '', 1));
-    } while (enemyNumber > 0);
-    // Falta instanciar al enemie
-  }
-
-  createMissile(missileImage) {
-    const cell = this.getAvailableCell();
-    this.drawElement({ x: cell.col, y: cell.row, image: missileImage })
+  renderMap() {
+    this.ctx.fillStyle = 'lightblue';
+    this.ctx.fillRect(0, 0, this.width, this.height);
+    this.cellOcupied.map((row, rowIndex) => {
+      row.map((cell, colIndex) => {
+        if (cell) {
+          this.drawElement({ x: colIndex, y: rowIndex, image: cloudImage });
+        }
+      });
+    });
   }
 
   getAvailableCell() {
@@ -81,23 +83,47 @@ export class Canvas {
     return { row, col };
   }
 
-  drawElement(element){
+  drawElement(element) {
     const { x, y, image } = element;
     this.ctx.drawImage(
       image,
       x * this.cellSize + 0.1 * this.cellSize,
       y * this.cellSize + 0.1 * this.cellSize,
       0.7 * this.cellSize,
-      0.8 *this.cellSize
+      0.8 * this.cellSize
     );
   }
 
-  changeElementPosition(element){
-    const { initialPos, finalPos, image} = element;
-    this.ctx.clearRect(initialPos.x * this.cellSize, initialPos.y * this.cellSize, this.cellSize, this.cellSize);
+  changeElementPosition(element) {
+    const { initialPos, finalPos, image } = element;
+    this.ctx.clearRect(
+      initialPos.x * this.cellSize,
+      initialPos.y * this.cellSize,
+      this.cellSize,
+      this.cellSize
+    );
     this.ctx.fillStyle = 'lightblue';
-    this.ctx.fillRect(initialPos.x * this.cellSize, initialPos.y * this.cellSize, this.cellSize, this.cellSize);
+    this.ctx.fillRect(
+      initialPos.x * this.cellSize,
+      initialPos.y * this.cellSize,
+      this.cellSize,
+      this.cellSize
+    );
 
-    this.drawElement({ x: finalPos.x, y: finalPos.y, image: image })
+    this.drawElement({ x: finalPos.x, y: finalPos.y, image: image });
+  }
+
+  checkCollision(a, b) {
+    return a.x === b.x && a.y === b.y;
+  }
+
+  wallCollision(pos) {
+    return (
+      pos.y < 0 ||
+      pos.y >= this.height ||
+      pos.x < 0 ||
+      pos.x >= this.width ||
+      this.cellOcupied[pos.y][pos.x]
+    );
   }
 }

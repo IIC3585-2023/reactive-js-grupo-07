@@ -1,32 +1,23 @@
 const { Observable, interval } = rxjs;
 const { map, combineLatest } = rxjs.operators;
-import { DIRECTIONS } from './constants.js';
+import { P1DIRECTIONS, P2DIRECTIONS, FPS } from './constants.js';
 
 // Player object
 export class Player {
-  constructor(x, y, direction, speed) {
+  constructor(x, y, direction, canvas, image) {
     this.x = x;
     this.y = y;
-    this.direction = direction; // Canvas tiene que elegir dirección posible para partir
-    this.speed = speed;
+    this.direction = { x: 1, y: 0 }; // Canvas tiene que elegir dirección posible para parti4
+    this.canvas = canvas;
+    this.image = image;
     this.isLive = true;
-    this.n_bombs = 0;
-    this.isAlly = false;
   }
   move() {
-    switch (this.direction) {
-      case 'up':
-        this.y = this.y - 1
-        break;
-      case 'down':
-        this.y = this.y + 1
-        break;
-      case 'left':
-        this.x = this.x - 1
-        break;
-      case 'right':
-        this.x = this.x + 1
-        break;
+    const tempx = this.x + this.direction.x;
+    const tempy = this.y + this.direction.y;
+    if (!this.canvas.wallCollision({ x: tempx, y: tempy })) {
+      this.x = tempx;
+      this.y = tempy;
     }
   }
   changeDirection(direction) {
@@ -36,11 +27,13 @@ export class Player {
     this.isLive = false;
   }
   getPosition$() {
-    return interval(1000) // 60 fps
+    return interval(1000 / FPS) // 30 fps
       .pipe(
         map(() => {
-          this.move()
-          return { x: this.x, y: this.y };
+          const initialPosition = { x: this.x, y: this.y };
+          this.move();
+          const finalPosition = { x: this.x, y: this.y };
+          return { initialPosition, finalPosition };
         })
       );
   }
@@ -48,14 +41,18 @@ export class Player {
 
 // Ally subclass
 export class Ally extends Player {
-  constructor(x, y, direction, speed, id) {
-    super(x, y, direction, speed);
+  constructor(x, y, direction, id, canvas, image) {
+    super(x, y, direction, canvas, image);
     this.id = id;
     this.isAlly = true;
     this.kills = 0;
+    this.n_bombs = 0;
   }
   takeBomb() {
     this.n_bombs += 1;
+  }
+  changeDirection(direction) {
+    this.direction = direction;
   }
   attackOtherPlayer(opponentPilot) {
     if (opponentPilot.isAlly) return;
@@ -71,7 +68,15 @@ export class Ally extends Player {
 
 // Enemy subclass. It moves faster than the ally
 export class Enemy extends Player {
-  constructor(x, y, direction, speed) {
-    super(x, y, direction, speed);
+  constructor(x, y, direction, canvas, image) {
+    super(x, y, direction, canvas, image);
+    console.log(this.direction);
+    this.isAlly = false;
+  }
+  changeDirection(direction) {
+    const pos = { x: this.x + this.direction.x, y: this.y + this.direction.y };
+    if (this.canvas.wallCollision(pos)) {
+      this.direction = direction;
+    }
   }
 }

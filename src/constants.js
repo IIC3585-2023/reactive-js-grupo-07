@@ -1,13 +1,20 @@
 export const CELL_SIZE = 30;
 export const DIMENSION = '2d';
-export const SPEED = 100;
+export const FPS = 2;
 export const BOMBS_PER_LEVEL = 1;
-export const INITIAL_DIRECTION = '';
-export const DIRECTIONS = {
+export const INITIAL_DIRECTION = { x: -1, y: 0 };
+export const P1DIRECTIONS = {
   37: { x: -1, y: 0 },
   38: { x: 0, y: -1 },
   39: { x: 1, y: 0 },
   40: { x: 0, y: 1 },
+};
+
+export const P2DIRECTIONS = {
+  65: { x: -1, y: 0 },
+  87: { x: 0, y: -1 },
+  68: { x: 1, y: 0 },
+  83: { x: 0, y: 1 },
 };
 
 export const MAP = `
