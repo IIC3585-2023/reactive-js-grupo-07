@@ -9,7 +9,12 @@ import {
   P1DIRECTIONS,
   P2DIRECTIONS,
 } from './constants.js';
-import { createPlayers, createEnemies, createMissile } from './utils.js';
+import {
+  createPlayers,
+  createEnemies,
+  createMissile,
+  takeBomb,
+} from './utils.js';
 
 const { fromEvent, Observable, interval } = rxjs;
 const { map, filter, startWith, distinctUntilChanged, combineLatest, scan } =
