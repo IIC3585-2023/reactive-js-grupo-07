@@ -1,4 +1,4 @@
-import { Ally, Enemy } from './player.js';
+import { Ally, Enemy, Missile } from './player.js';
 
 export const createPlayers = (
   canvas,
@@ -43,7 +43,8 @@ export const createMissile = (canvas, missileImage) => {
   const cell = canvas.getAvailableCell();
   canvas.drawElement({ x: cell.col, y: cell.row, image: missileImage });
   canvas.resetBitmap();
-  return { x: cell.col, y: cell.row };
+  const missile = new Missile(cell.col, cell.row, canvas, missileImage);
+  return missile;
 };
 
 export const getRandomNumber = (min, max) => {

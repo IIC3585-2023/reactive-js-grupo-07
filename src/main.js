@@ -12,12 +12,11 @@ import {
 import {
   createPlayers,
   createEnemies,
-  createMissile,
-  takeBomb,
+  createMissile
 } from './utils.js';
 
-const { fromEvent, Observable, interval } = rxjs;
-const { map, filter, startWith, distinctUntilChanged, combineLatest, scan } =
+const { fromEvent, Observable, interval, of, from } = rxjs;
+const { map, filter, startWith, distinctUntilChanged, combineLatest, scan, sequenceEqual, switchMap} =
   rxjs.operators;
 
 const start_btn = document.getElementById('start_btn');
@@ -130,7 +129,7 @@ const startGame = (canvas) => {
   });
 
   let combined$;
-  if (mode.value == 'Single') {
+  if (mode.value == 1) {
     combined$ = playersObservable[0];
   } else {
     combined$ = playersObservable[0].pipe(
@@ -140,9 +139,17 @@ const startGame = (canvas) => {
     );
   }
 
-  combined$.pipe(scan((takeBomb, createMissile(canvas, bombImage))));
+  // combined$.pipe(scan((takeBomb, createMissile(canvas, bombImage))));
 
-  combined$.subscribe((e) => console.log(e));
+  const missileObservable = missile.getPosition$();
+  of(combined$)
+    .pipe(switchMap(arr => from(arr).pipe(sequenceEqual(missileObservable))))
+    .subscribe(console.log);
+
+  // combined$.subscribe((e) => console.log(e));
+
+
+  
   //position$.subscribe((e) => console.log(e));
 
   // position$.subscribe((e) => console.log(e));

@@ -80,3 +80,22 @@ export class Enemy extends Player {
     }
   }
 }
+
+// Enemy subclass. It moves faster than the ally
+export class Missile {
+  constructor(x, y, canvas, image) {
+    this.x = x
+    this.x = y
+    this.canvas = canvas
+    this.image = image
+  }
+
+  getPosition$() {
+    return interval(1000 / FPS) // 30 fps
+      .pipe(
+        map(() => {
+          return { x: this.x, y: this.y };
+        })
+      );
+  }
+}
