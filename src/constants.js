@@ -2,7 +2,7 @@ export const CELL_SIZE = 30;
 export const DIMENSION = '2d';
 export const SPEED = 100;
 export const BOMBS_PER_LEVEL = 1;
-export const INITIAL_DIRECTION = { x: 0, y: 0 };
+export const INITIAL_DIRECTION = '';
 export const DIRECTIONS = {
   37: { x: -1, y: 0 },
   38: { x: 0, y: -1 },

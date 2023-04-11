@@ -13,9 +13,21 @@ export class Player {
     this.n_bombs = 0;
     this.isAlly = false;
   }
-  move(x, y) {
-    this.x = x;
-    this.y = y;
+  move() {
+    switch (this.direction) {
+      case 'up':
+        this.y = this.y - 1
+        break;
+      case 'down':
+        this.y = this.y + 1
+        break;
+      case 'left':
+        this.x = this.x - 1
+        break;
+      case 'right':
+        this.x = this.x + 1
+        break;
+    }
   }
   changeDirection(direction) {
     this.direction = direction;
@@ -23,14 +35,15 @@ export class Player {
   getDestroyed() {
     this.isLive = false;
   }
-  // getPosition$() {
-  //   return interval(1000) // 60 fps
-  //     .pipe(
-  //       map(() => {
-  //         return { x: this.x, y: this.y };
-  //       })
-  //     );
-  // }
+  getPosition$() {
+    return interval(1000) // 60 fps
+      .pipe(
+        map(() => {
+          this.move()
+          return { x: this.x, y: this.y };
+        })
+      );
+  }
 }
 
 // Ally subclass

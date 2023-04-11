@@ -43,12 +43,12 @@ export class Canvas {
     let players = [];
     const player1Cell = this.getAvailableCell();
     this.drawElement({ x: player1Cell.col, y: player1Cell.row, image: player1Image })
-    players.push(new Ally(player1Cell.col, player1Cell.row, 39, 1, 1));
+    players.push(new Ally(player1Cell.col, player1Cell.row, '', 1, 1));
     
     if (player2Image) {
       const player2Cell = this.getAvailableCell();
       this.drawElement({ x: player2Cell.col, y: player2Cell.row, image: player2Image })
-      players.push(new Ally(player2Cell.col, player2Cell.row, 39, 1, 2));
+      players.push(new Ally(player2Cell.col, player2Cell.row, '', 1, 2));
     }
     // Falta instanciar al jugador (crear clase)
     return players;
@@ -61,7 +61,7 @@ export class Canvas {
       const cell = this.getAvailableCell();
       this.drawElement({ x: cell.col, y: cell.row, image: enemieImage })
       enemyNumber -= 1;
-      enemies.push(new Enemy(cell.col, cell.row, 39, 1));
+      enemies.push(new Enemy(cell.col, cell.row, '', 1));
     } while (enemyNumber > 0);
     // Falta instanciar al enemie
   }
@@ -92,20 +92,12 @@ export class Canvas {
     );
   }
 
-  changeElementPosition(initialPos, finalPos, image){
-    console.log(initialPos,this.cellSize)
+  changeElementPosition(element){
+    const { initialPos, finalPos, image} = element;
     this.ctx.clearRect(initialPos.x * this.cellSize, initialPos.y * this.cellSize, this.cellSize, this.cellSize);
     this.ctx.fillStyle = 'lightblue';
     this.ctx.fillRect(initialPos.x * this.cellSize, initialPos.y * this.cellSize, this.cellSize, this.cellSize);
 
     this.drawElement({ x: finalPos.x, y: finalPos.y, image: image })
-  }
-
-  movePlayer(element){
-    const { x, y, player, image} = element;
-    const initialPos = {x: player.x , y: player.y}
-    const finalPos = {x: x, y: y}
-    this.changeElementPosition(initialPos, finalPos, image)
-    player.move(x, y)
   }
 }

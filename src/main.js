@@ -72,12 +72,6 @@ const startGame = (canvas) => {
     : (start_btn.disabled = true);
 
 
-    ////// INICIO VERSION 2 /////////////////////
-
-  // Define the initial position
-  let position = { x: players[0].x, y: players[0].y };
-  let direction = '';
-
   // Create observables for key presses and game ticks
   const keyDown$ = fromEvent(document, 'keydown');
   const tick$ = interval(100);
@@ -88,7 +82,7 @@ const startGame = (canvas) => {
   );
 
   // Map arrow key presses to direction strings
-  const direction$ = arrowKeys$.pipe(
+  let direction$ = arrowKeys$.pipe(
     map(event => {
       switch (event.code) {
         case 'ArrowUp':
@@ -101,28 +95,21 @@ const startGame = (canvas) => {
           return 'right';
       }
     })
-  );
+  ); 
+ 
+  direction$.subscribe((e) =>{
+    if(players[0].direction != e){
+      players[0].changeDirection(e)
+    }
+  })
 
-  // Scan over the direction stream to update the position of Pac-Man
-  const position$ = direction$.pipe(
-    scan((position, direction) => {
-      switch (direction) {
-        case 'up':
-          return { x: position.x, y: position.y - 1 };
-        case 'down':
-          return { x: position.x, y: position.y + 1 };
-        case 'left':
-          return { x: position.x - 1, y: position.y };
-        case 'right':
-          return { x: position.x + 1, y: position.y };
-      }
-    }, position)
-  );
-
-  ////// FIN VERSION 2 /////////////////////
-
-  position$.subscribe((e) =>
-    canvas.movePlayer({ x: e.x, y: e.y, player: players[0], image: player1Image})
+  let position$ = players[0].getPosition$();
+  position$.subscribe((e) =>{
+    canvas.changeElementPosition({ 
+      initialPos: {x: e.x, y: e.y}, 
+      finalPos: {x: players[0].x, y: players[0].y}, 
+      image: player1Image})
+  }
   );
   //position$.subscribe((e) => console.log(e.x));
 
