@@ -33,6 +33,7 @@ const startGame = (canvas) => {
   const start_warning = document.getElementById('start_warning');
   const mode = document.getElementById('mode');
   const level = document.getElementById('level');
+  let playing = true;
 
   if (level.value == 'Level' || mode.value == 'Mode') {
     start_warning.style.display = 'block';
@@ -166,28 +167,32 @@ const startGame = (canvas) => {
     // Logica para choque entre personajes ally vs enemy
     observables.map((value, index) => {
       observables.map((value2, index2) => {
-        if (index != index2) {
-          if (
-            canvas.checkCollision(value.finalPosition, value2.finalPosition)
-          ) {
-            const entity = entities[index];
-            if (entity.isAlly) {
-              entity.attackOtherPlayer(entities[index2]);
-              enemies = enemies.filter((enemy) => enemy.isLive);
-              document.getElementById('enemyNumber').textContent = enemies.length;
-              if (enemies.length == 0) {
-                alert('Felicitaciones! Ha'+ (mode.value == 2 ? 'n': 's')+' conseguido matar a todos los enemigos');
-                entities.map((entity) => entity.isLive = false);
-                location.reload();
-              }
-              else if (players.filter((player) => player.isLive).length == 0) {
-                alert('Lamentablemente, ha'+ (mode.value == 2 ? 'n': 's')+' sido derrotado'+ (mode.value == 2 ? 's': '')+' :(');
-                entities.map((entity) => entity.isLive = false);
-                location.reload();
+        if (playing) {
+          if (index != index2) {
+            if (
+              canvas.checkCollision(value.finalPosition, value2.finalPosition)
+              ) {
+                const entity = entities[index];
+                if (entity.isAlly) {
+                  entity.attackOtherPlayer(entities[index2]);
+                  enemies = enemies.filter((enemy) => enemy.isLive);
+                  document.getElementById('enemyNumber').textContent = enemies.length;
+                  if (enemies.length == 0) {
+                    alert('Felicitaciones! Ha'+ (mode.value == 2 ? 'n': 's')+' conseguido matar a todos los enemigos');
+                    entities.map((entity) => entity.isLive = false);
+                    playing = false;
+                    location.reload();
+                  }
+                  else if (players.filter((player) => player.isLive).length == 0) {
+                    alert('Lamentablemente, ha'+ (mode.value == 2 ? 'n': 's')+' sido derrotado'+ (mode.value == 2 ? 's': '')+' :(');
+                    entities.map((entity) => entity.isLive = false);
+                    playing = false;
+                    location.reload();
+                  }
+                }
               }
             }
           }
-        }
       });
     });
   });
