@@ -1,13 +1,12 @@
-const { Observable, interval } = rxjs;
-const { map, combineLatest } = rxjs.operators;
-import { P1DIRECTIONS, P2DIRECTIONS, FPS } from './constants.js';
+const { interval } = rxjs;
+const { map } = rxjs.operators;
+import { FPS } from './constants.js';
 
-// Player object
 export class Player {
   constructor(x, y, direction, canvas, image) {
     this.x = x;
     this.y = y;
-    this.direction = { x: 1, y: 0 }; // Canvas tiene que elegir dirección posible para parti4
+    this.direction = { x: 1, y: 0 };
     this.canvas = canvas;
     this.image = image;
     this.isLive = true;
@@ -40,7 +39,6 @@ export class Player {
   }
 }
 
-// Ally subclass
 export class Ally extends Player {
   constructor(x, y, direction, id, canvas, image, bombElement, scoreElement) {
     super(x, y, direction, canvas, image, bombElement, scoreElement);
@@ -82,7 +80,6 @@ export class Ally extends Player {
   }
 }
 
-// Enemy subclass. It moves faster than the ally
 export class Enemy extends Player {
   constructor(x, y, direction, canvas, image) {
     super(x, y, direction, canvas, image);
@@ -108,8 +105,7 @@ export class Enemy extends Player {
   }
 }
 
-// Enemy subclass. It moves faster than the ally
-export class Missile {
+export class Bomb {
   constructor(x, y, canvas, image) {
     this.x = x;
     this.y = y;

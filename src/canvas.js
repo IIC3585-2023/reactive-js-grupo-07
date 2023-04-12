@@ -10,7 +10,7 @@ export class Canvas {
     this.height = this.cellSize * this.rows.length;
     this.cellOcupied = this.createBitmap(map);
     this.ctx = canvas.getContext(dimension);
-    this.missile = {x: null, y: null};
+    this.bomb = {x: null, y: null};
   }
 
   createCanvas(canvasElement) {
@@ -39,19 +39,17 @@ export class Canvas {
     this.renderMap(ctx);
     this.renderPlayers(ctx, scene.players);
     this.renderEnemies(ctx, scene.enemies);
-    this.renderMissiles(ctx, scene.missiles);
+    this.renderBombs(ctx, scene.bombs);
     this.renderScore(ctx, scene.score);
   }
 
   createMap(cloudImage) {
-    // set dimensions and background color
     const canvas = this.canvas;
     canvas.setAttribute('width', this.width);
     canvas.setAttribute('height', this.height);
     this.ctx.fillStyle = 'lightblue';
     this.ctx.fillRect(0, 0, this.width, this.height);
-
-    // create clouds
+    
     this.rows.map((row, rowIndex) => {
       const columns = row.split('');
       columns.map((cell, colIndex) => {
@@ -111,10 +109,11 @@ export class Canvas {
       this.cellSize
     );
   }
+
   changeElementPosition(element) {
     const { initialPos, finalPos, entity, bombImage } = element;
     this.deleteElement({ x: initialPos.x, y: initialPos.y });
-    if (initialPos.x === this.missile.x && initialPos.y === this.missile.y) {
+    if (initialPos.x === this.bomb.x && initialPos.y === this.bomb.y) {
       if (!entity.isAlly) {
         this.drawElement({ x: initialPos.x, y: initialPos.y, image: bombImage });
       }

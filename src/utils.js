@@ -1,4 +1,4 @@
-import { Ally, Enemy, Missile } from './player.js';
+import { Ally, Enemy, Bomb } from './entities.js';
 
 export const createPlayers = (
   canvas,
@@ -9,9 +9,15 @@ export const createPlayers = (
   let players = [];
   do {
     const cell = canvas.getAvailableCell();
-    const image = players.length === 0 ? player1Elements.image : player2Elements.image;
-    const bombElement = players.length === 0 ? player1Elements.bombs : player2Elements.bombs;
-    const scoreElement = players.length === 0 ? player1Elements.score : player2Elements.score;
+    const image = players.length === 0 
+      ? player1Elements.image 
+      : player2Elements.image;
+    const bombElement = players.length === 0 
+      ? player1Elements.bombs 
+      : player2Elements.bombs;
+    const scoreElement = players.length === 0 
+      ? player1Elements.score 
+      : player2Elements.score;
     canvas.drawElement({
       x: cell.col,
       y: cell.row,
@@ -43,13 +49,13 @@ export const createEnemies = (canvas, enemieImage, enemyNumber) => {
   return enemies;
 };
 
-export const createMissile = (canvas, missileImage) => {
+export const createBomb = (canvas, bombImage) => {
   const cell = canvas.getAvailableCell();
-  canvas.drawElement({ x: cell.col, y: cell.row, image: missileImage });
+  canvas.drawElement({ x: cell.col, y: cell.row, image: bombImage });
   canvas.resetBitmap();
-  const missile = new Missile(cell.col, cell.row, canvas, missileImage);
-  canvas.missile = { x: cell.col, y: cell.row };
-  return missile;
+  const bomb = new Bomb(cell.col, cell.row, canvas, bombImage);
+  canvas.bomb = { x: cell.col, y: cell.row };
+  return bomb;
 };
 
 export const getRandomNumber = (min, max) => {
