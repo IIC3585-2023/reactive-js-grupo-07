@@ -142,13 +142,7 @@ const startGame = (canvas) => {
     observables.map((value, index) => {
       if (canvas.checkCollision(value.finalPosition, bombPos)) {
         const entity = entities[index];
-        if (!entity.isAlly) {
-          canvas.drawElement({
-            x: bombPos.x,
-            y: bombPos.y,
-            image: bombImage,
-          });
-        } else {
+        if (entity.isAlly) {
           entity.takeBomb();
           bomb = createBomb(canvas, bombImage);
         }
