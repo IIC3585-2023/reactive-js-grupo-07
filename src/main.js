@@ -88,65 +88,6 @@ const applyDirections = (players, playersDirection, enemies, enemyDirection$) =>
   });
 }
 
-const setEntitiesMovements = (observables, canvas, bombImage, entities) => {
-  observables.map((observable, idx) => {
-    canvas.changeElementPosition({
-      initialPos: observable.initialPosition,
-      finalPos: observable.finalPosition,
-      entity: entities[idx],
-      bombImage: bombImage,
-    });
-  });
-}
-
-const checkBombCollision = (observables, canvas, bombImage, entities, bomb) => {
-  const bombPos = bomb.getPosition();
-  observables.map((value, index) => {
-    if (canvas.checkCollision(value.finalPosition, bombPos)) {
-      const entity = entities[index];
-      if (entity.isAlly) {
-        entity.takeBomb();
-        createBomb(canvas, bombImage);
-      }
-    }
-  });
-}
-
-const checkEntitiesCollision = (observables, canvas, playing, entities, players, enemies) => {
-  observables.map((value, index) => {
-    observables.map((value2, index2) => {
-      if (playing) {
-        if (index != index2) {
-          if (
-            canvas.checkCollision(value.finalPosition, value2.finalPosition)
-            ) {
-              const entity = entities[index];
-              if (entity.isAlly) {
-                entity.attackOtherPlayer(entities[index2]);
-                enemies = enemies.filter((enemy) => enemy.isLive);
-                document.getElementById('enemyNumber').textContent = enemies.length;
-                if (enemies.length == 0) {
-                  alert('Felicitaciones! Ha'+ (mode.value == 2 ? 'n': 's')+' conseguido matar a todos los enemigos');
-                  entities.map((entity) => entity.isLive = false);
-                  playing = false;
-                  location.reload();
-                }
-                else if (players.filter((player) => player.isLive).length == 0) {
-                  alert('Lamentablemente, ha'+ (mode.value == 2 ? 'n': 's')+' sido derrotado'+ (mode.value == 2 ? 's': '')+' :(');
-                  entities.map((entity) => entity.isLive = false);
-                  playing = false;
-                  location.reload();
-                }
-              }
-            }
-          }
-        }
-    });
-  });
-}
- 
-
-
 const startGame = (canvas) => {
   const start_warning = document.getElementById('start_warning');
   const mode = document.getElementById('mode');
@@ -187,9 +128,63 @@ const startGame = (canvas) => {
   });
   const latestPositions$ = combineLatest(...positionObservable);
   latestPositions$.subscribe((observables) => {
-    setEntitiesMovements(observables, canvas, htmlElements.bombImage, entities)
-    checkBombCollision(observables, canvas, htmlElements.bombImage, entities, bomb)
-    checkEntitiesCollision(observables, canvas, playing, entities, players, enemies)
+
+    observables.map((observable, idx) => {
+      canvas.changeElementPosition({
+        initialPos: observable.initialPosition,
+        finalPos: observable.finalPosition,
+        entity: entities[idx],
+        bombImage: bombImage,
+      });
+    });
+
+    const bombPos = bomb.getPosition();
+    observables.map((value, index) => {
+      if (canvas.checkCollision(value.finalPosition, bombPos)) {
+        const entity = entities[index];
+        if (!entity.isAlly) {
+          canvas.drawElement({
+            x: bombPos.x,
+            y: bombPos.y,
+            image: bombImage,
+          });
+        } else {
+          entity.takeBomb();
+          bomb = createBomb(canvas, bombImage);
+        }
+      }
+    });
+
+    observables.map((value, index) => {
+      observables.map((value2, index2) => {
+        if (playing) {
+          if (index != index2) {
+            if (
+              canvas.checkCollision(value.finalPosition, value2.finalPosition)
+              ) {
+                const entity = entities[index];
+                if (entity.isAlly) {
+                  entity.attackOtherPlayer(entities[index2]);
+                  enemies = enemies.filter((enemy) => enemy.isLive);
+                  document.getElementById('enemyNumber').textContent = enemies.length;
+                  if (enemies.length == 0) {
+                    alert('Felicitaciones! Ha'+ (mode.value == 2 ? 'n': 's')+' conseguido matar a todos los enemigos');
+                    entities.map((entity) => entity.isLive = false);
+                    playing = false;
+                    location.reload();
+                  }
+                  else if (players.filter((player) => player.isLive).length == 0) {
+                    alert('Lamentablemente, ha'+ (mode.value == 2 ? 'n': 's')+' sido derrotado'+ (mode.value == 2 ? 's': '')+' :(');
+                    entities.map((entity) => entity.isLive = false);
+                    playing = false;
+                    location.reload();
+                  }
+                }
+              }
+            }
+          }
+      });
+    });
   });
 };
 
