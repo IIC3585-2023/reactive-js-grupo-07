@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <link rel="stylesheet" href="index.css" />
+    <meta charset="utf-8" />
+    <!-- BOOTSTRAP -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    />
+    <!-- Google fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/rxjs@^7/dist/bundles/rxjs.umd.min.js"></script>
+    <title>Top Gun Game</title>
+  </head>
+  <body>
+    <div class="page-container">
+      <div class="sidebar">
+        <div class="scoreboard">
+          <h3>Scoreboard</h3>
+          <div class="player">
+            <img class="player-icon" src="assets/maverick.png" />
+            <div id="player1Score" class="player-score">0☠️</div>
+            <div id="player1Bombs" class="player-score">0💣</div>
+          </div>
+          <div class="player">
+            <img class="player-icon" src="assets/iceman.png" />
+            <div id="player2Score" class="player-score">0☠️</div>
+            <div id="player2Bombs" class="player-score">0💣</div>
+          </div>
+        </div>
+        <div class="scoreboard enemy-left">
+          <h3>Enemies Left</h3>
+          <div class="player">
+            <img class="player-icon" src="assets/russianPilot.png" />
+            <div id="enemyNumber" class="player-score">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="game-container">
+        <section class="config-container d-flex-column text-center">
+          <h1 class="text-muted">Top Gun: Air Idols</h1>
+          <div>
+            <div class="p-2">
+              <select id="level" class="form-select rounded">
+                <option selected disabled>Level</option>
+                <option value="1">Easy</option>
+                <option value="2">Medium</option>
+                <option value="3">Hard</option>
+              </select>
+              <select id="mode" class="ml-5 form-select rounded">
+                <option selected disabled>Mode</option>
+                <option value="1">Solo</option>
+                <option value="2">Multiplayer</option>
+              </select>
+            </div>
+          </div>
+          <div id="start_warning" style="display: none" class="text-danger">
+            Debes seleccionar nivel y modo de juego
+          </div>
+          <div class="p-2">
+            <button type="button" id="start_btn" class="btn btn-success">
+              START GAME
+            </button>
+          </div>
+        </section>
+        <canvas id="canvas" class="d-block w-100 border border-dark"></canvas>
+        <img id="cloudImage" src="assets/cloud.png" style="display: none" />
+        <img
+          id="player1Image"
+          src="assets/maverick.png"
+          style="display: none"
+        />
+        <img id="player2Image" src="assets/iceman.png" style="display: none" />
+        <img
+          id="enemieImage"
+          src="assets/russianPilot.png"
+          style="display: none"
+        />
+        <img id="bombImage" src="assets/bomb.png" style="display: none" />
+      </div>
+    </div>
+  </body>
+  <script type="module" src="src/main.js"></script>
+</html>
